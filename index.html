@@ -8,14 +8,21 @@
 <style>
 body{
   margin:0;
-  background: radial-gradient(circle at center, #111 0%, #000 100%);
-  font-family: 'Segoe UI', sans-serif;
+  font-family:'Segoe UI',sans-serif;
   text-align:center;
   overflow:hidden;
+  background:linear-gradient(135deg,#ff512f,#dd2476,#1e3c72);
+  background-size:400% 400%;
+  animation:gradientBG 10s ease infinite;
   color:white;
 }
 
-/* CONTENEDOR SUPERIOR */
+@keyframes gradientBG{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
 #wheelContainer{
   position:relative;
   width:100%;
@@ -23,21 +30,52 @@ body{
   overflow:hidden;
 }
 
-/* Canvas grande para que solo se vea la mitad */
 canvas{
   position:absolute;
-  top:-50%;
+  top:-55%;
   left:50%;
   transform:translateX(-50%);
 }
 
-/* Botón WhatsApp */
-#whatsappBtn{
-  position:fixed;
-  bottom:30px;
+#pointer{
+  position:absolute;
+  top:0;
   left:50%;
   transform:translateX(-50%);
-  background:linear-gradient(90deg,#25D366,#128C7E);
+  width:0;height:0;
+  border-left:20px solid transparent;
+  border-right:20px solid transparent;
+  border-top:40px solid gold;
+  z-index:10;
+}
+
+#infoBox{
+  margin-top:10px;
+  font-size:18px;
+  font-weight:bold;
+  text-shadow:0 0 10px black;
+}
+
+#countdown{
+  font-size:26px;
+  margin-top:5px;
+  font-weight:bold;
+}
+
+#result{
+  font-size:40px;
+  font-weight:bold;
+  margin-top:10px;
+  display:none;
+  text-shadow:0 0 20px yellow;
+}
+
+#whatsappBtn{
+  position:fixed;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#25D366;
   padding:18px 45px;
   border:none;
   border-radius:40px;
@@ -45,36 +83,36 @@ canvas{
   font-weight:bold;
   cursor:pointer;
   color:white;
-  box-shadow:0 0 25px #25D366;
-  transition:0.3s;
+  box-shadow:0 0 20px #25D366;
 }
 
-#whatsappBtn:hover{
-  transform:translateX(-50%) scale(1.08);
+.confetti{
+  position:fixed;
+  width:8px;
+  height:8px;
+  background:yellow;
+  top:-10px;
+  animation:fall 3s linear forwards;
 }
 
-/* Flecha indicadora */
-#pointer{
-  position:absolute;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  width:0;
-  height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
-  border-top:35px solid gold;
-  z-index:10;
+@keyframes fall{
+  to{transform:translateY(100vh) rotate(720deg);}
 }
 </style>
 </head>
-
 <body>
 
 <div id="wheelContainer">
   <div id="pointer"></div>
   <canvas id="wheel" width="900" height="900"></canvas>
 </div>
+
+<div id="infoBox">
+  💰 Participación: 3 USDT &nbsp; | &nbsp; 🏆 Premio: 180 USDT
+</div>
+
+<div id="countdown"></div>
+<div id="result"></div>
 
 <button id="whatsappBtn"
 onclick="window.open('https://wa.me/50558752291?text=Hola%2C%20me%20interesa%20participar%20en%20el%20sorteo','_blank')">
@@ -85,17 +123,21 @@ QUIERO PARTICIPAR
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const center = canvas.width/2;
-const radius = canvas.width/2 - 20;
+const radius = canvas.width/2 - 40;
 
 const numbers = Array.from({length:200},(_,i)=>i+1);
 const slice = (2*Math.PI)/numbers.length;
 
 let angle = 0;
 let speed = 0.03;
+let stopped = false;
+const winningNumber = 57;
+
+const resultDate = new Date("2026-02-17T15:00:00");
 
 function getColor(i){
-  const colors = ["#ff003c","#ff8c00","#ffd700","#00ffae","#00c3ff","#a100ff"];
-  return colors[i % colors.length];
+  const colors=["#ffcc00","#ff0066","#00ffcc","#ff3300","#9933ff"];
+  return colors[i%colors.length];
 }
 
 function drawWheel(){
@@ -108,33 +150,63 @@ function drawWheel(){
     ctx.beginPath();
     ctx.moveTo(center,center);
     ctx.arc(center,center,radius,start,end);
-    ctx.fillStyle = getColor(i);
+    ctx.fillStyle=getColor(i);
     ctx.fill();
 
     ctx.save();
     ctx.translate(center,center);
-    ctx.rotate(start + slice/2);
+    ctx.rotate(start+slice/2);
     ctx.fillStyle="white";
-    ctx.font="bold 22px Arial";
-    ctx.shadowColor="black";
-    ctx.shadowBlur=4;
-    ctx.fillText(num, radius-60, 8);
+    ctx.font="bold 30px Arial";
+    ctx.fillText(num,radius-80,10);
     ctx.restore();
   });
 }
 
-function updateSpeed(){
-  const hour = new Date().getHours();
-  speed = hour < 12 ? 0.05 : 0.025;
-}
-
 function animate(){
-  angle += speed;
+  if(!stopped){
+    angle+=speed;
+  }
   drawWheel();
-  updateSpeed();
   requestAnimationFrame(animate);
 }
 
+function showResult(){
+  stopped=true;
+  speed=0;
+
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").innerHTML=
+  "🎉 NÚMERO GANADOR 🎉<br>"+winningNumber;
+
+  for(let i=0;i<120;i++){
+    let conf=document.createElement("div");
+    conf.className="confetti";
+    conf.style.left=Math.random()*100+"vw";
+    conf.style.background=getColor(i);
+    conf.style.animationDuration=(2+Math.random()*2)+"s";
+    document.body.appendChild(conf);
+    setTimeout(()=>conf.remove(),3000);
+  }
+}
+
+function updateCountdown(){
+  const now=new Date();
+  const diff=resultDate-now;
+  const cd=document.getElementById("countdown");
+
+  if(diff<=10000 && diff>0){
+    cd.innerHTML="⏳ Resultado en "+Math.ceil(diff/1000)+"...";
+  }
+  else if(diff<=0 && !stopped){
+    showResult();
+  }
+  else{
+    cd.innerHTML="Resultado hoy 3:00 PM";
+  }
+}
+
+setInterval(updateCountdown,1000);
 animate();
 </script>
 
