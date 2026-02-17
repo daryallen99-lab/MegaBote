@@ -6,219 +6,184 @@
 <title>MEGABOTE USDT</title>
 
 <style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
 body{
-  margin:0;
-  font-family:'Segoe UI',sans-serif;
-  text-align:center;
-  overflow:hidden;
-  background:linear-gradient(135deg,#ff416c,#ff4b2b,#ffcc00);
-  background-size:400% 400%;
-  animation:gradientBG 12s ease infinite;
-  color:white;
+height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:space-between;
+background:linear-gradient(135deg,#ff6a00,#ffb347,#ff3cac);
+overflow:hidden;
+color:white;
+text-align:center;
 }
 
-@keyframes gradientBG{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
+/* CONTENEDOR RULETA */
+.ruleta-container{
+width:100%;
+height:40vh;
+overflow:hidden;
+position:relative;
+display:flex;
+align-items:flex-start;
+justify-content:center;
 }
 
-#wheelContainer{
-  position:relative;
-  width:100%;
-  height:55vh;
-  overflow:hidden;
+/* RULETA */
+.ruleta{
+width:180vw;
+height:180vw;
+border-radius:50%;
+position:absolute;
+top:-140vw;
+animation:girar 6s linear infinite;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
-canvas{
-  position:absolute;
-  top:-55%;
-  left:50%;
-  transform:translateX(-50%);
+.numero{
+position:absolute;
+font-size:4rem;
+font-weight:bold;
+color:white;
+text-shadow:2px 2px 5px rgba(0,0,0,0.4);
 }
 
-#pointer{
-  position:absolute;
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-  width:0;height:0;
-  border-left:22px solid transparent;
-  border-right:22px solid transparent;
-  border-top:45px solid gold;
-  z-index:10;
+@keyframes girar{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
 }
 
-#infoBox{
-  margin-top:10px;
-  font-size:18px;
-  font-weight:bold;
-  text-shadow:0 0 8px black;
+/* INFO */
+.info{
+margin-top:20px;
+font-size:1.2rem;
+font-weight:bold;
 }
 
-#countdown{
-  font-size:22px;
-  margin-top:5px;
-  font-weight:bold;
+/* CUENTA REGRESIVA */
+.countdown{
+font-size:3rem;
+margin-top:10px;
+font-weight:bold;
 }
 
-#resultTag{
-  display:none;
-  margin:20px auto;
-  padding:20px 30px;
-  width:80%;
-  max-width:400px;
-  background:linear-gradient(45deg,#000,#222);
-  border:3px solid gold;
-  border-radius:20px;
-  box-shadow:0 0 25px gold;
-  font-size:26px;
-  font-weight:bold;
-  animation:pop 0.8s ease;
+/* RESULTADO */
+.resultado{
+font-size:4rem;
+font-weight:bold;
+margin-top:15px;
+display:none;
+animation:aparecer 1s ease forwards;
 }
 
-@keyframes pop{
-  0%{transform:scale(0.5);opacity:0;}
-  100%{transform:scale(1);opacity:1;}
+@keyframes aparecer{
+from{transform:scale(0);opacity:0;}
+to{transform:scale(1);opacity:1;}
 }
 
-#whatsappBtn{
-  position:fixed;
-  bottom:25px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#25D366;
-  padding:18px 45px;
-  border:none;
-  border-radius:40px;
-  font-size:18px;
-  font-weight:bold;
-  cursor:pointer;
-  color:white;
-  box-shadow:0 0 20px #25D366;
-}
-
-.confetti{
-  position:fixed;
-  width:10px;
-  height:10px;
-  top:-10px;
-  animation:fall 3s linear forwards;
-}
-
-@keyframes fall{
-  to{transform:translateY(100vh) rotate(720deg);}
+/* BOTÓN */
+.boton{
+margin-bottom:40px;
+padding:15px 30px;
+background:#25D366;
+color:white;
+border:none;
+border-radius:40px;
+font-size:1.2rem;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,0.3);
+text-decoration:none;
 }
 </style>
 </head>
 <body>
 
-<div id="wheelContainer">
-  <div id="pointer"></div>
-  <canvas id="wheel" width="900" height="900"></canvas>
+<div class="ruleta-container">
+<div class="ruleta" id="ruleta"></div>
 </div>
 
-<div id="infoBox">
-  💰 Participación: 3 USDT | 🏆 Premio: 180 USDT
+<div class="info">
+💰 Participación: 3 USDT | 🏆 Premio: 221 USDT<br>
+📅 Resultado hoy 10:00 PM
 </div>
 
-<div id="countdown"></div>
-<div id="resultTag"></div>
+<div class="countdown" id="countdown"></div>
+<div class="resultado" id="resultado">🎉 Número Ganador: 82 🎉</div>
 
-<button id="whatsappBtn"
-onclick="window.open('https://wa.me/5358752291?text=Hola%2C%20me%20interesa%20participar%20en%20el%20sorteo','_blank')">
+<a class="boton" 
+href="https://wa.me/5358752291?text=Hola%2C%20me%20interesa%20participar%20en%20el%20sorteo" 
+target="_blank">
 QUIERO PARTICIPAR
-</button>
+</a>
 
 <script>
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
-const center = canvas.width/2;
-const radius = canvas.width/2 - 40;
 
-const numbers = Array.from({length:200},(_,i)=>i+1);
-const slice = (2*Math.PI)/numbers.length;
-
-let angle = 0;
-let speed = 0.03;
-let stopped = false;
-
-const winningNumber = 57;
-const resultDate = new Date("2026-02-17T15:00:00");
-
-function getColor(i){
-  const colors=["#ffcc00","#ff0066","#00ffcc","#ff3300","#9933ff"];
-  return colors[i%colors.length];
+// CREAR 200 NÚMEROS
+const ruleta = document.getElementById("ruleta");
+const totalNumeros = 200;
+for(let i=1;i<=totalNumeros;i++){
+let numero = document.createElement("div");
+numero.classList.add("numero");
+numero.innerText = i;
+let angulo = (360/totalNumeros)*i;
+numero.style.transform = `rotate(${angulo}deg) translate(80vw) rotate(-${angulo}deg)`;
+ruleta.appendChild(numero);
 }
 
-function drawWheel(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+// CONFIGURAR HORA RESULTADO 10PM
+function actualizarCuenta(){
+let ahora = new Date();
+let objetivo = new Date();
+objetivo.setHours(22,0,0,0);
 
-  numbers.forEach((num,i)=>{
-    const start = slice*i + angle;
-    const end = start + slice;
+let diferencia = objetivo - ahora;
 
-    ctx.beginPath();
-    ctx.moveTo(center,center);
-    ctx.arc(center,center,radius,start,end);
-    ctx.fillStyle=getColor(i);
-    ctx.fill();
-
-    ctx.save();
-    ctx.translate(center,center);
-    ctx.rotate(start+slice/2);
-    ctx.fillStyle="white";
-    ctx.font="bold 28px Arial";
-    ctx.fillText(num,radius-85,10);
-    ctx.restore();
-  });
+if(diferencia <= 10000 && diferencia > 0){
+document.getElementById("countdown").innerText =
+Math.ceil(diferencia/1000);
 }
 
-function animate(){
-  if(!stopped){
-    angle+=speed;
-  }
-  drawWheel();
-  requestAnimationFrame(animate);
+if(diferencia <= 0){
+document.getElementById("countdown").style.display="none";
+document.getElementById("resultado").style.display="block";
+lanzarConfeti();
+}
 }
 
-function launchConfetti(){
-  for(let i=0;i<150;i++){
-    let c=document.createElement("div");
-    c.className="confetti";
-    c.style.left=Math.random()*100+"vw";
-    c.style.background=getColor(i);
-    c.style.animationDuration=(2+Math.random()*2)+"s";
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),3000);
-  }
+setInterval(actualizarCuenta,1000);
+
+// CONFETI
+function lanzarConfeti(){
+for(let i=0;i<100;i++){
+let confeti=document.createElement("div");
+confeti.style.position="absolute";
+confeti.style.width="8px";
+confeti.style.height="8px";
+confeti.style.background="white";
+confeti.style.top="0";
+confeti.style.left=Math.random()*100+"vw";
+confeti.style.animation="caer 3s linear forwards";
+document.body.appendChild(confeti);
+}
 }
 
-function showResult(){
-  stopped=true;
-  speed=0;
+let style=document.createElement("style");
+style.innerHTML=`
+@keyframes caer{
+to{transform:translateY(100vh) rotate(720deg);opacity:0;}
+}`;
+document.head.appendChild(style);
 
-  document.getElementById("resultTag").style.display="block";
-  document.getElementById("resultTag").innerHTML=
-  "🎉 RESULTADO OFICIAL 🎉<br> Número ganador: "+winningNumber;
-
-  launchConfetti();
-}
-
-function checkTime(){
-  const now=new Date();
-  const diff=resultDate-now;
-
-  if(diff<=0 && !stopped){
-    showResult();
-  }else if(diff>0){
-    document.getElementById("countdown").innerHTML=
-    "Resultado hoy 3:00 PM";
-  }
-}
-
-setInterval(checkTime,1000);
-animate();
 </script>
 
 </body>
