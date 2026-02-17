@@ -11,9 +11,9 @@ body{
   font-family:'Segoe UI',sans-serif;
   text-align:center;
   overflow:hidden;
-  background:linear-gradient(135deg,#ff512f,#dd2476,#1e3c72);
+  background:linear-gradient(135deg,#ff416c,#ff4b2b,#ffcc00);
   background-size:400% 400%;
-  animation:gradientBG 10s ease infinite;
+  animation:gradientBG 12s ease infinite;
   color:white;
 }
 
@@ -43,9 +43,9 @@ canvas{
   left:50%;
   transform:translateX(-50%);
   width:0;height:0;
-  border-left:20px solid transparent;
-  border-right:20px solid transparent;
-  border-top:40px solid gold;
+  border-left:22px solid transparent;
+  border-right:22px solid transparent;
+  border-top:45px solid gold;
   z-index:10;
 }
 
@@ -53,21 +53,33 @@ canvas{
   margin-top:10px;
   font-size:18px;
   font-weight:bold;
-  text-shadow:0 0 10px black;
+  text-shadow:0 0 8px black;
 }
 
 #countdown{
-  font-size:26px;
+  font-size:22px;
   margin-top:5px;
   font-weight:bold;
 }
 
-#result{
-  font-size:40px;
-  font-weight:bold;
-  margin-top:10px;
+#resultTag{
   display:none;
-  text-shadow:0 0 20px yellow;
+  margin:20px auto;
+  padding:20px 30px;
+  width:80%;
+  max-width:400px;
+  background:linear-gradient(45deg,#000,#222);
+  border:3px solid gold;
+  border-radius:20px;
+  box-shadow:0 0 25px gold;
+  font-size:26px;
+  font-weight:bold;
+  animation:pop 0.8s ease;
+}
+
+@keyframes pop{
+  0%{transform:scale(0.5);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
 }
 
 #whatsappBtn{
@@ -88,9 +100,8 @@ canvas{
 
 .confetti{
   position:fixed;
-  width:8px;
-  height:8px;
-  background:yellow;
+  width:10px;
+  height:10px;
   top:-10px;
   animation:fall 3s linear forwards;
 }
@@ -108,14 +119,14 @@ canvas{
 </div>
 
 <div id="infoBox">
-  💰 Participación: 3 USDT &nbsp; | &nbsp; 🏆 Premio: 180 USDT
+  💰 Participación: 3 USDT | 🏆 Premio: 180 USDT
 </div>
 
 <div id="countdown"></div>
-<div id="result"></div>
+<div id="resultTag"></div>
 
 <button id="whatsappBtn"
-onclick="window.open('https://wa.me/50558752291?text=Hola%2C%20me%20interesa%20participar%20en%20el%20sorteo','_blank')">
+onclick="window.open('https://wa.me/5358752291?text=Hola%2C%20me%20interesa%20participar%20en%20el%20sorteo','_blank')">
 QUIERO PARTICIPAR
 </button>
 
@@ -131,8 +142,8 @@ const slice = (2*Math.PI)/numbers.length;
 let angle = 0;
 let speed = 0.03;
 let stopped = false;
-const winningNumber = 57;
 
+const winningNumber = 57;
 const resultDate = new Date("2026-02-17T15:00:00");
 
 function getColor(i){
@@ -157,8 +168,8 @@ function drawWheel(){
     ctx.translate(center,center);
     ctx.rotate(start+slice/2);
     ctx.fillStyle="white";
-    ctx.font="bold 30px Arial";
-    ctx.fillText(num,radius-80,10);
+    ctx.font="bold 28px Arial";
+    ctx.fillText(num,radius-85,10);
     ctx.restore();
   });
 }
@@ -171,42 +182,42 @@ function animate(){
   requestAnimationFrame(animate);
 }
 
+function launchConfetti(){
+  for(let i=0;i<150;i++){
+    let c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=getColor(i);
+    c.style.animationDuration=(2+Math.random()*2)+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+  }
+}
+
 function showResult(){
   stopped=true;
   speed=0;
 
-  document.getElementById("result").style.display="block";
-  document.getElementById("result").innerHTML=
-  "🎉 NÚMERO GANADOR 🎉<br>"+winningNumber;
+  document.getElementById("resultTag").style.display="block";
+  document.getElementById("resultTag").innerHTML=
+  "🎉 RESULTADO OFICIAL 🎉<br> Número ganador: "+winningNumber;
 
-  for(let i=0;i<120;i++){
-    let conf=document.createElement("div");
-    conf.className="confetti";
-    conf.style.left=Math.random()*100+"vw";
-    conf.style.background=getColor(i);
-    conf.style.animationDuration=(2+Math.random()*2)+"s";
-    document.body.appendChild(conf);
-    setTimeout(()=>conf.remove(),3000);
-  }
+  launchConfetti();
 }
 
-function updateCountdown(){
+function checkTime(){
   const now=new Date();
   const diff=resultDate-now;
-  const cd=document.getElementById("countdown");
 
-  if(diff<=10000 && diff>0){
-    cd.innerHTML="⏳ Resultado en "+Math.ceil(diff/1000)+"...";
-  }
-  else if(diff<=0 && !stopped){
+  if(diff<=0 && !stopped){
     showResult();
-  }
-  else{
-    cd.innerHTML="Resultado hoy 3:00 PM";
+  }else if(diff>0){
+    document.getElementById("countdown").innerHTML=
+    "Resultado hoy 3:00 PM";
   }
 }
 
-setInterval(updateCountdown,1000);
+setInterval(checkTime,1000);
 animate();
 </script>
 
